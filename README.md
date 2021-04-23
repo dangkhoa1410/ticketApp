@@ -15,7 +15,6 @@
 
 ### ADMIN dashboards
 ```
-- Admin can post a ticket by a form
 - View all tickets in a table with ACTION COLUMN
 - Review system: ACCEPT -> ticket will turn GREEN
                  REJECT -> ticket will turn RED
@@ -24,7 +23,8 @@
 ## Others
 ```
 - Front end only projects
-- Have to pass data to cookies in order to persist states, can be prevent by calling directly from server
-- Every axios request can be authenticated server sided using JWT and {withCredentials: true}
+- Every axios request can be authenticated {withCredentials: true}
 - Included a test story objects for testing UI & Functionalities
+- Use cookies to pass non-sensitive data
+- Authenticated private routes with token in local storage
 ```

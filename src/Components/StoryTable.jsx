@@ -3,11 +3,12 @@ import axios from 'axios'
 import { navigate } from '@reach/router'
 
 const StoryTable = props => {
-    const {stories, isAdmin, testStory} = props
+    const {isAdmin} = props
     
     const [storyID, setStoryID] = useState("")
 
     const [updatedStory, setUpdatedStory] = useState({
+        id: 0,
         createdBy: "",
         summary: "",
         description: "",
@@ -18,33 +19,40 @@ const StoryTable = props => {
         status:"Pending"
     })
 
-    const [allStories,setAll] = useState(null)
+    const [allStories,setStories] = useState(null)
 
-    const [testObj, setTestObj] = useState(null)
-
-    // Demo for Admin role
-    useEffect (() => {
-        setTestObj(testStory)
-    }, [testStory])
-
-    useEffect (() => {
-        setAll(stories)
-    }, [stories])
+    const [reload, setReload] = useState(false)
 
     useEffect(()=>{
-        axios.get(`http://localhost:3000/api/v1/stories/${storyID}`)
-            .then(res => setUpdatedStory(res.data))
+        axios.get('http://localhost:3000/api/v1/stories', {
+            headers: {
+                'Authorization': `${sessionStorage.getItem('userToken')}`}})
+            .then(res => setStories(res.data))
+            .catch(err => console.log("Error getting all stories", err.response))
+    },[reload])
+
+
+    useEffect(()=>{
+        axios.get(`http://localhost:3000/api/v1/stories/${storyID}`,{
+            headers: {
+                'Authorization': `${sessionStorage.getItem('userToken')}`}})
+            .then(res => 
+                {
+                    setUpdatedStory(res.data)
+                    console.log("Updating this story",updatedStory)
+                })
             .catch(err => console.log("Error getting a story", err))
     },[storyID])
 
     const acceptHandler = e => {
         setStoryID(e.target.id)
-        axios.put(`http://localhost:3000/api/v1/stories/${e.target.id}/accepted`, updatedStory)
+        axios.put(`http://localhost:3000/api/v1/stories/${e.target.id}/accepted`, updatedStory,{
+            headers: {
+                'Authorization': `${sessionStorage.getItem('userToken')}`}})
         .then(res => {
-            if(res.data.error){
-                console.log("Error accepting story!", res.data.error)
-            } else {
-                setUpdatedStory({
+            console.log("Accepted", updatedStory)            
+            setReload(!reload)
+            setUpdatedStory({
                     createdBy: "",
                     summary: "",
                     description: "",
@@ -54,18 +62,25 @@ const StoryTable = props => {
                     cost: 0,
                     status:"Pending"
                     })
-                }
-            })
+                })        
+            navigate('/dashboard')
+            
+        .catch(err => {
+            console.log("Error accepting a story!!", err.response)
+            // setError(err.response.data.error)
+        })
+            
     }
 
     const rejectHandler = e => {
         setStoryID(e.target.id)
-        axios.put(`http://localhost:3000/api/v1/stories/${e.target.id}/rejected`, updatedStory)
+        axios.put(`http://localhost:3000/api/v1/stories/${e.target.id}/rejected`, updatedStory,{
+            headers: {
+                'Authorization': `${sessionStorage.getItem('userToken')}`}})
         .then(res => {
-            if(res.data.error){
-                console.log("Error accepting story!", res.data.error)
-            } else {
-                setUpdatedStory({
+            console.log("Rejected!!", res)
+            setReload(!reload)
+            setUpdatedStory({
                     createdBy: "",
                     summary: "",
                     description: "",
@@ -75,35 +90,40 @@ const StoryTable = props => {
                     cost: 0,
                     status:"Pending"
                     })
-                }
+                })      
+                            
+            .catch(err => {
+                console.log("Error rejecting a story!!", err.response)
+                // setError(err.response.data.error)
             })
+        
+        navigate('/dashboard')
     }
-    // Examples of sorting
-    // Can apply to actual data retrieved back from API  -- allStories
+    
     const typeSort = e => {
         e.preventDefault()
-        testStory.sort((a,b) => {
+        allStories.sort((a,b) => {
             if(a.type.toLowerCase() < b.type.toLowerCase()) {
                 return -1
             }
             if(a.type.toLowerCase() > b.type.toLowerCase()) {
                 return 1
             }
-           return 0
+        return 0
             
         })
-        setTestObj(testStory)
+        setStories(allStories)
         navigate('/dashboard')
         }
     
     const complexitySort = e => {
         e.preventDefault()
-        testStory.sort((a,b) => {
+        allStories.sort((a,b) => {
             var aComplex, bComplex
             if(a.complexity.toLowerCase() === "low") {
                 aComplex = 0
             }
-            if(a.complexity.toLowerCase() === "medium") {
+            if(a.complexity.toLowerCase() === "mid") {
                 aComplex = 1
             }
             if(a.complexity.toLowerCase() === "high") {
@@ -113,7 +133,7 @@ const StoryTable = props => {
             if(b.complexity.toLowerCase() === "low") {
                 bComplex = 0
             }
-            if(b.complexity.toLowerCase() === "medium") {
+            if(b.complexity.toLowerCase() === "mid") {
                 bComplex = 1
             }
             if(b.complexity.toLowerCase() === "high") {
@@ -126,36 +146,27 @@ const StoryTable = props => {
             if(aComplex > bComplex) {
                 return 1
             }
-            return 0
+            if(aComplex > bComplex) {
+                return 0
+            }
         })
-        setTestObj(testStory)
+        setStories(allStories)
         navigate('/dashboard')
         }
     
     const sortByID = e => {
         e.preventDefault()
-        testStory.sort((a,b) => parseInt(a.id) - parseInt(b.id))
-        setTestObj(testStory)
+        allStories.sort((a,b) => parseInt(a.id) - parseInt(b.id))
+        setStories(allStories)
         navigate('/dashboard')
     }
     
-    //Accept & Reject function sample for Admin
-    //If we have backend, actual object will be updated and rerender
-    const acceptHandlerTest = e => {
-        e.preventDefault()
-        const key = parseInt(e.target.id)
-        const thisStory = testObj[key]
-        thisStory.status = "accepted"
-        setTestObj([...testObj.slice(0,key),thisStory,...testObj.slice(key+1)])
-        console.log(testObj)
-        navigate('/dashboard')
-    }
-    const rejectHandlerTest = e => {
-        const key = parseInt(e.target.id)
-        const thisStory = testObj[key]
-        thisStory.status = "rejected"
-        setTestObj([...testObj.slice(0,key),thisStory,...testObj.slice(key+1)])
-    }
+    // const rejectHandlerTest = e => {
+    //     const key = parseInt(e.target.id)
+    //     const thisStory = testObj[key]
+    //     thisStory.status = "rejected"
+    //     setTestObj([...testObj.slice(0,key),thisStory,...testObj.slice(key+1)])
+    // }
 
     return (
         <>
@@ -184,33 +195,7 @@ const StoryTable = props => {
                     </tr>
                 </thead>
                 <tbody>
-                    {/* Demo info */}
-                    {
-                        testObj ? testObj.map((story,key) => {
-                            return (
-                                <tr class={story.status === "accepted"? "table-success" 
-                                : story.status === "rejected"? "table-danger"
-                                    :"table-light"}>
-                                    <th scope="row">{story.id}</th>
-                                    <td>{story.summary}</td>
-                                    <td>{story.description}</td>
-                                    <td>{story.type}</td>
-                                    <td>{story.complexity}</td>
-                                    <td>{story.estimatedHrs}</td>
-                                    <td>{story.cost}</td>
-                                    {
-                                        isAdmin === "true" ? <td>
-                                                    <button class="btn btn-success" id={key} onClick = {acceptHandlerTest} >Accept</button>
-                                                    <button class="btn btn-danger" id={key} onClick = {rejectHandlerTest} >Reject</button>
-                                                </td>
-                                        : ""
-                                    }
-                                </tr>
-                            )
-                        })
-                        : ""
-                    }
-                    
+                                        
                     {/* Loop through the whole stories list */}
                     
                         

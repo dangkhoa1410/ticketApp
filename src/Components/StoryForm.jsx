@@ -4,6 +4,12 @@ const StoryForm = props => {
     return (
         <div class="col-8 offset-2">
             <form onSubmit = {props.onSubmitHandler}>
+
+                <div class="form-group row">
+                    {
+                        props.errors ? <ul className="text-danger"><li>{props.errors}</li></ul> : ""
+                    }
+                </div>
                 <div class="form-group row">
                     <label htmlFor="summary" class="col-sm-2 col-form-label">Summary</label>
                     <div class="col-sm-10">
@@ -22,9 +28,9 @@ const StoryForm = props => {
                     <label htmlFor="type" class="col-sm-2 col-form-label">Type</label>
                     <div class="col-sm-10">
                         <select class="form-control" id="type" placeholder="Type" onChange= {props.onChangeHandler} value={props.form.type}>
-                            <option>Bugfix</option>
-                            <option>Development</option>
-                            <option>QA</option>
+                            <option>bugfix</option>
+                            <option>development</option>
+                            <option>enhancement</option>
                         </select>
                     </div>
                 </div>
@@ -33,9 +39,9 @@ const StoryForm = props => {
                     <label htmlFor="complexity" class="col-sm-2 col-form-label">Complexity</label>
                     <div class="col-sm-10">
                         <select class="form-control" id="complexity" placeholder="Complexity" onChange= {props.onChangeHandler} value={props.form.complexity}>
-                            <option>Low</option>
-                            <option>Medium</option>
-                            <option>High</option>
+                            <option>low</option>
+                            <option>mid</option>
+                            <option>high</option>
                         </select>
                     </div>
                 </div>

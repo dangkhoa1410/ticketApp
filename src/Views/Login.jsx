@@ -25,6 +25,7 @@ const Login = props => {
                 } else {
                     console.log("Successful login!", res)
                     props.setLogged(res.data)
+                    sessionStorage.setItem("userToken", res.data.token)
                     setForm({
                         email: "",
                         pwd: "",
@@ -32,9 +33,8 @@ const Login = props => {
                     })
                     setCookie("loggedFirstname",res.data.firstName, {path: '/'})
                     setCookie("loggedLastname",res.data.lastName, {path: '/'})
-                    setCookie("loggedID",res.data.id, {path: '/'})
-                    setCookie("loggedRole",res.data.role, {path: '/'})
                     setCookie("loggedAdmin",form.isAdmin, {path: '/'})
+
                     navigate("/dashboard")
                 }
                 
